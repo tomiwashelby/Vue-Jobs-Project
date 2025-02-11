@@ -5,11 +5,27 @@
 	import {useToast} from 'vue-toastification';
 	import axios from 'axios';
 	import backButton from '@/components/backButton.vue';
+	import { db } from "../fireBaseConfig.js";
+	import { doc, getDoc, deleteDoc } from "firebase/firestore";
 
 	const route = useRoute();
 	const jobId = route.params.id;
 	const state = reactive({
-		job: {},
+		// job: {},
+		job: {
+			// id: '',
+			// title: '',
+			// type: '',
+			// description: '',
+			// location: '',
+			// salary: '',
+			company: {
+				name: '',
+				description: '',
+				contactEmail: '',
+				contactPhone: ''
+			}
+		},
 		isLoading : true
 	});
 
@@ -17,6 +33,8 @@
 	const router = useRouter();
 
 	const deleteJob = async () => {
+		// Development
+		/*
 		try {
 			const confirm = window.confirm('Are you sure you want to delete job?');
 			if (confirm) {
@@ -30,15 +48,51 @@
 			console.log(error);
 			toast.error('Job not delete!');
 		}
+		*/
+
+		// Firebase Integration
+		try {
+			const confirm = window.confirm("Are your sure you want to delete theis job?");
+			if (confirm) {
+				await deleteDoc(doc(db, "jobs", jobId));
+				console.log("Job deleted successfully!");
+				toast.success('Job deleted successfully!');
+				router.push('/jobs');
+			}
+		} catch (error) {
+			console.error("Error deleting job:", error);
+			toast.error('Job not delete!');
+		}
 	};
 
 	onMounted(async () => {
+		// Development
+		/*
 		try {
 			const response = await axios.get(`/api/jobs/${jobId}`);
 			state.job = response.data;
 		}
 		catch (error) {
 			console.log('Error fetching data', error);
+		}
+		finally {
+			state.isLoading = false;
+		}
+		*/
+
+		// Firebase Integration
+		state.isLoading = true;
+		const jobRef = doc(db, "jobs", jobId);
+		const jobSnap = await getDoc(jobRef);
+
+		try {
+			if (jobSnap.exists()) {
+				state.job = jobSnap.data();
+			} else {
+				console.error("Job not found!");
+			}
+		} catch (error) {
+			console.error("Error fetching job:", error);
 		}
 		finally {
 			state.isLoading = false;

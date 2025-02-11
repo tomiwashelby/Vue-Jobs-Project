@@ -4,6 +4,9 @@
 	import {ref, defineProps, onMounted, reactive} from 'vue';
 	import pulseLoader from 'vue-spinner/src/PulseLoader.vue';
 	import axios from 'axios';
+	import { db } from "../fireBaseConfig.js";
+	import { collection, getDocs } from "firebase/firestore";
+
 
 	defineProps({
 		limit: Number,
@@ -20,12 +23,32 @@
 	});
 
 	onMounted(async () => {
+		state.isLoading = true;
+		// Development
+		/*
 		try {
 			const response = await axios.get('/api/jobs');
 			state.jobs = response.data;
 		}
 		catch (error) {
 			console.log('Error fetching data', error);
+		}
+		finally {
+			state.isLoading = false;
+		}
+		*/
+
+		// Firebase Integration
+		try {
+			const querySnapshot = await getDocs(collection(db, "jobs"));
+			return state.jobs = querySnapshot.docs.map((doc) => ({
+				id: doc.id,
+				...doc.data(),
+			}));
+			console.log("Jobs:", state.jobs);
+		}
+		catch (error) {
+			console.error("Error fetching jobs:", error);
 		}
 		finally {
 			state.isLoading = false;

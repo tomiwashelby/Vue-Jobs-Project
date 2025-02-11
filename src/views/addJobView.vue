@@ -3,6 +3,8 @@
 	import {useToast} from 'vue-toastification';
 	import axios from 'axios';
 	import router from '@/router';
+	import { db } from "../fireBaseConfig.js";
+	import { collection, addDoc } from "firebase/firestore";
 
 	const form = reactive({
 		type: '',
@@ -36,6 +38,8 @@
 			},
 		};
 
+		// Development
+		/*
 		try {
 			const response = await axios.post('/api/jobs', newJob);
 			toast.success('Job added successfully!');
@@ -43,6 +47,18 @@
 		}
 		catch (error) {
 			console.log('Error posting data', error);
+			toast.error('Job was not added!');
+		}
+		*/
+
+		// Firebase Integration
+		try {
+			const docRef = await addDoc(collection(db, "jobs"), newJob);
+			console.log("Job added with ID:", docRef.id);
+			toast.success('Job added successfully!');
+			router.push(`/jobs/${docRef.id}`);
+		} catch (error) {
+			console.error("Error adding job:", error);
 			toast.error('Job was not added!');
 		}
 	};

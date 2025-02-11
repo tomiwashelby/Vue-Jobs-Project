@@ -4,6 +4,8 @@
 	import { useRoute } from 'vue-router';
 	import axios from 'axios';
 	import router from '@/router';
+	import { db } from "../fireBaseConfig.js";
+	import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 	const route = useRoute();
 	const jobId = route.params.id;
@@ -28,11 +30,19 @@
 	});
 
 	onMounted(async () => {
+		state.isLoading = true;
+		const jobRef = doc(db, "jobs", jobId);
+		const jobSnap = await getDoc(jobRef);
+
 		try {
-			const response = await axios.get(`/api/jobs/${jobId}`);
-			state.job = response.data;
+			// const response = await axios.get(`/api/jobs/${jobId}`);
+			if (jobSnap.exists()) {
+				state.job = jobSnap.data() || {};
+			} else {
+				console.error("Job not found!");
+			}
 			// Populate inputs
-			form.type = state.job.form;
+			form.type = state.job.type;
 			form.title =  state.job.title;
 			form.description = state.job.description;
 			form.salary = state.job.salary;
@@ -46,7 +56,7 @@
 			console.error('Error fetching job', error);
 		}
 		finally {
-
+			state.isLoading = false;
 		}
 	});
 
@@ -56,7 +66,6 @@
 		const updatedJob = {
 			title: form.title,
 			type: form.type,
-			location: form.location,
 			description: form.description,
 			salary: form.salary,
 			location: form.location,
@@ -68,6 +77,14 @@
 			},
 		};
 
+		if (JSON.stringify(updatedJob) === JSON.stringify(state.job)) {
+			toast.info("No changes detected.");
+			router.push(`/jobs/${jobId}`);
+			return;
+		}
+
+		// Development
+		/*
 		try {
 			const response = await axios.put(`/api/jobs/${jobId}`, updatedJob);
 			// todo - show toast
@@ -76,6 +93,18 @@
 		}
 		catch (error) {
 			console.error('Error updating data', error);
+			toast.error('Job was not updated!');
+		}
+		*/
+
+		// Firebase Integration
+		try {
+			const jobRef = doc(db, "jobs", jobId);
+			await updateDoc(jobRef, updatedJob);
+			toast.success('Job updated successfully!');
+			router.push(`/jobs/${jobId}`);
+		} catch (error) {
+			console.error("Error updating job:", error);
 			toast.error('Job was not updated!');
 		}
 	};
@@ -131,7 +160,7 @@
 					</div>
 					
 					<div class="mb-4">
-						<label for="type" class="block text-gray-700 font-bold mb-2">Salary</label>
+						<label for="salary" class="block text-gray-700 font-bold mb-2">Salary</label>
 						<select
 							v-model="form.salary"
 							id="salary"

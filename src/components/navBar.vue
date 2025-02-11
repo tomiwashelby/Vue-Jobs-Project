@@ -17,7 +17,7 @@
           >
             <!-- Logo -->
             <RouterLink 
-              class="flex flex-shrink-0 items-center mr-4" 
+              class="flex flex-shrink-0 items-center ml-2" 
               to="/"
             >
               <img class="h-10 w-auto" :src="logo" alt="Vue Jobs" />
@@ -25,8 +25,8 @@
                 Vue Jobs
               </span>
             </RouterLink>
-            <div class="md:ml-auto">
-              <div class="flex space-x-2">
+            <div class="ml-auto">
+              <div class="flex sm:space-x-2 text-xs sm:text-sm">
                 <RouterLink
                   to="/"
                   :class="[isActiveLink('/') ? 'bg-green-900' : 'hover:bg-gray-900 hover:text-white', 'text-white', 'px-3', 'py-2', 'rounded-md']"

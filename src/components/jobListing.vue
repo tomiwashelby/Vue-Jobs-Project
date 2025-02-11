@@ -6,7 +6,7 @@
     job: Object
   });
 
-  let fullDescription = ref(false);
+  const fullDescription = ref(false);
 
   const toggleFullDescription = () => {
     fullDescription.value = !fullDescription.value;
@@ -23,7 +23,7 @@
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-md relative">
+  <div class="bg-white rounded-xl shadow-md">
     <div class="p-4">
       <div class="mb-6">
         <div class="text-gray-600 my-2">{{job.type}}</div>
